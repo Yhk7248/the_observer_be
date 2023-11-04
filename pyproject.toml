@@ -1,0 +1,14 @@
+[tool.poetry]
+name = "The Obsever"
+version = "0.1.0"
+description = "The Observer Backend"
+authors = ["younghyun7248@gmail.com"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+
+[build-system]
+requires = ["poetry-core>=1.0.0", "SQLAlchemy==2.0.23", "fastapi[all]"]
+build-backend = "poetry.core.masonry.api"
