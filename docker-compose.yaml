@@ -5,7 +5,7 @@ services:
     container_name: my-mysql-container
     environment:
       MYSQL_ROOT_PASSWORD: TO_ADMIN
-      MYSQL_DATABASE: TO_MYSQL
+      MYSQL_DATABASE: observer
       MYSQL_USER: TO_USER
       MYSQL_PASSWORD: TO_USER_PASSWORD
     ports:
