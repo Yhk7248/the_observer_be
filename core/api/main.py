@@ -1,5 +1,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+import uvicorn
+
+from core.common.loader.config_loader import ConfigLoader
 
 # FastAPI 인스턴스 생성
 app = FastAPI()
@@ -20,12 +24,13 @@ app.add_middleware(
 
 
 @app.get("/")
-def test_root():
-    return {"message": "Hello, FastAPI!"}
+def health_check():
+    return JSONResponse(
+        content={"status": "running"}
+    )
 
 
 if __name__ == "__main__":
-    import uvicorn
-
-    # "main" 모듈을 실행하고 개발 서버시작.
+    # http://127.0.0.1:8000/docs >> 스웨거 주소
+    ConfigLoader().load(path='../common/config/config.yaml')
     uvicorn.run(app, host="0.0.0.0", port=8000)
