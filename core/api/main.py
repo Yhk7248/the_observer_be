@@ -4,9 +4,15 @@ from fastapi.responses import JSONResponse
 import uvicorn
 
 from core.common.loader.config_loader import ConfigLoader
+from core.common.db.mysql.settings import Settings
+from core.api.routers.user import router as user_router
+from core.api.routers.auth import router as auth_router
 
 # FastAPI 인스턴스 생성
 app = FastAPI()
+app.include_router(user_router)
+app.include_router(auth_router)
+
 
 # *로 모든 접근을 허용할 수 있다.
 origins = [
@@ -33,4 +39,5 @@ def health_check():
 if __name__ == "__main__":
     # http://127.0.0.1:8000/docs >> 스웨거 주소
     ConfigLoader().load(path='../common/config/config.yaml')
+    Settings()
     uvicorn.run(app, host="0.0.0.0", port=8000)
