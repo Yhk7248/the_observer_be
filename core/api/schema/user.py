@@ -15,5 +15,5 @@ class CreateUserRequest(BaseModel):
     email: EmailStr
     personal_key: str
     member_no: str
-    reg_dtm: datetime
-    # last_log_dtm: datetime
+    created_at: datetime
+    # login_time: datetime
