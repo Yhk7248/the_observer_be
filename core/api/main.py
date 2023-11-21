@@ -1,15 +1,18 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from starlette.middleware.authentication import AuthenticationMiddleware
 import uvicorn
 
+from core.common.helper.jwt_helper import JWTAuth
 from core.common.loader.config_loader import ConfigLoader
 from core.common.db.mysql.settings import Settings
-from core.api.routers.user import router as user_router
+from core.api.routers.user import router as guest_router, user_router
 from core.api.routers.auth import router as auth_router
 
 # FastAPI 인스턴스 생성
 app = FastAPI()
+app.include_router(guest_router)
 app.include_router(user_router)
 app.include_router(auth_router)
 
@@ -21,11 +24,8 @@ origins = [
 
 # CORS 미들웨어 설정
 app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,  # cookie 포함 여부를 설정한다. 기본은 False
-    allow_methods=["*"],  # 허용할 method를 설정할 수 있으며, 기본값은 'GET'이다.
-    allow_headers=["*"],  # 허용할 http header 목록을 설정할 수 있으며 Content-Type,
+    AuthenticationMiddleware,
+    backend=JWTAuth(),
 )
 
 

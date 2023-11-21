@@ -1,10 +1,13 @@
-from jose import jwt
+from jose import jwt, JWTError
 from passlib.context import CryptContext
 from datetime import datetime, timedelta
 from pydantic import BaseModel
 from fastapi.security import OAuth2PasswordBearer
 from fastapi.exceptions import HTTPException
+from fastapi import Depends
 
+from starlette.authentication import AuthCredentials, UnauthenticatedUser
+from core.common.db.mysql.settings import get_db
 from core.common.loader.config_loader import ConfigLoader
 from core.common.db.mysql.table_schema import UserModel
 
@@ -12,6 +15,28 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(
     tokenUrl="/auth/token"
 )
+
+
+class JWTAuth:
+    
+    @staticmethod
+    async def authenticate(conn):
+        guest = AuthCredentials(['unauthenticated']), UnauthenticatedUser()
+
+        if 'authorization' not in conn.headers:
+            return guest
+
+        token = conn.headers.get('authorization').split(' ')[1]
+
+        if not token:
+            return guest
+
+        user = get_current_user(token=token)
+
+        if not user:
+            return guest
+
+        return AuthCredentials('authenticated'), user
 
 
 class TokenResponse(BaseModel):
@@ -76,6 +101,14 @@ def _verify_user_access(user: UserModel):
         )
 
 
+def get_token_payload(token):
+    try:
+        payload = jwt.decode(token, ConfigLoader().config.JWT_SECRET, algorithms=[ConfigLoader().config.JWT_ALGORITHM])
+    except JWTError:
+        return None
+    return payload
+
+
 async def _get_user_token(user: UserModel, refresh_token=None):
     payload = {"id": user.id}
     access_token_expiry = timedelta(minutes=ConfigLoader().config.ACCESS_TOKEN_EXPIRE_MINUTES)
@@ -88,3 +121,33 @@ async def _get_user_token(user: UserModel, refresh_token=None):
         refresh_token=refresh_token,
         expires_in=access_token_expiry.seconds
     )
+
+
+async def get_refresh_token(token, db):
+    payload = get_token_payload(token=token)
+    user_id = payload.get('id', None)
+    if not user_id:
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid refresh token.",
+            headers={"WWW-Authenticate": "Bearer"}
+        )
+    user = db.query(UserModel).filter(UserModel.id == user_id).first()
+
+    return await _get_user_token(user=user, refresh_token=token)
+
+
+def get_current_user(token: str = Depends(oauth2_scheme), db=None):
+    payload = get_token_payload(token)
+    if not payload or type(payload) is not dict:
+        return None
+
+    user_id = payload.get('id', None)
+    if not user_id:
+        return None
+
+    if not db:
+        db = next(get_db())
+
+    user = db.query(UserModel).filter(UserModel.id == user_id).first()
+    return user
