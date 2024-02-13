@@ -2,12 +2,12 @@ version: '3'
 services:
   mysql:
     image: mysql:latest
-    container_name: my-mysql-container
+    container_name: observer-mysql
     environment:
-      MYSQL_ROOT_PASSWORD: TO_ADMIN
+      MYSQL_ROOT_PASSWORD: to_admin
       MYSQL_DATABASE: observer
-      MYSQL_USER: TO_USER
-      MYSQL_PASSWORD: TO_USER_PASSWORD
+      MYSQL_USER: to_user
+      MYSQL_PASSWORD: to_user_password
     ports:
       - "3306:3306"
     volumes:
