@@ -5,7 +5,7 @@ services:
     container_name: observer-mysql
     environment:
       MYSQL_ROOT_PASSWORD: to_admin
-      MYSQL_DATABASE: observer
+      MYSQL_DATABASE: observ`
       MYSQL_USER: to_user
       MYSQL_PASSWORD: to_user_password
     ports:
